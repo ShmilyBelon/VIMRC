@@ -1,0 +1,95 @@
+"重要备注：这个vim配置文件的编译选项中最多只能有2个
+"也就是说，比如set makeprg=g++\ %\ -Wall\ -o\ %<\ -std=c++11中间一个wall 最后一个c11
+"而且只能是中间一个，后面一个，不能在后面同时加-O2和-std=c++11，因此F5优化编译
+"写成了set makeprg=g++\ %\ -O2\ -o\ %<\ -std=c++11，只能舍去不重要的-Wall，总而言之
+"在这个虚拟机上，只能中间一个编译选项，后面一个，至于中间和后面是什么无所谓
+"在这个乌班图的虚拟机的vim配置文件上，-Wall好像是默认的编译选项，加不加都会有警告
+"在arch双系统上，规则也是只能中间一个后面一个，但是-std=c++11是默认的选项，加不加都能支持c++11特性编译
+"因此在虚拟机上跑的时候，最好先用F9编译（无优化，有警告），然后再用F5（有优化，可能无警告）
+"还有就是arch上F10热键冲突，运行改成了F12
+
+"首先是开启鼠标操作
+set mouse=a " Enable mouse usage(all mode) 很有用
+set showcmd    "Show (partial) command  in status line 不知有啥用
+set smartcase  "Do smart case matching  不知有啥用
+set autowrite  "Automatically save before commands like : next and :make 不知有啥用
+
+
+"以下来自简易版(去掉F5编译)
+map <C-A> ggVG"+y   
+"全选并且复制 其中的双引号是当前寄存器的意思，不是注释，+为系统寄存器
+"vim --version | grep clipboard 命令可以查看当前vim是否有可以复制到系统寄存器(即复制到vim外)的功能
+"如果是+clipboard 则有; 如果显示的是 -clipboard 说明不支持, 需要
+"安装vim-gtk 插件
+
+"括号自动匹配
+imap ( ()<ESC>i
+imap ) <c-r>=ClosePair(')')<CR>
+imap [ []<ESC>i
+imap ] <c-r>=ClosePair(']')<CR>
+imap { {}<ESC>i
+function! ClosePair(char)
+    if getline('.')[col('.')-1] == a:char
+        return "\<Right>"
+    else
+        return a:char
+    endif
+endfunction
+"简易版完
+
+"以下来自宋神版本
+set nocompatible
+syntax on
+colo desert
+set nu
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+set cindent
+set ruler
+set expandtab
+set backspace=indent,eol,start
+ab mp make_pair
+ab pub push_back
+ab pi pair<int, int>
+au BufNewFile *.cpp 0r ~/.header
+set makeprg=g++\ %\ -Wall\ -o\ %<\ -std=c++11
+map <F5> :sil call Test()<CR>
+map <F9> :sil call Cmp()<CR>
+map <F10> :sil call Run()<CR>
+imap <F5> <Esc><F5>
+imap <F9> <Esc><F9>
+imap <F10> <Esc><F10>
+function Set()
+winc l
+winc k
+w
+winc h
+w
+only
+endfunc
+function Run()
+call Set()
+!(time ./%< <%<.in >%<.out)2>>%<.out
+bel vs %<.in
+bel sv %<.out
+winc h
+colo desert
+endfunc
+function Cmp()
+call Set()
+let v:statusmsg=''
+make
+if empty(v:statusmsg)
+call Run()
+else
+cw
+winc k
+colo desert
+endif
+endfunc
+function Test()
+set makeprg=g++\ %\ -O2\ -o\ %<\ -std=c++11
+call Cmp()
+set makeprg=g++\ %\ -Wall\ -o\ %<\ -std=c++11
+endfunc

@@ -1,0 +1,38 @@
+"以下是简易模板
+"用法是按F5编译
+"备注：配置文件为etc/vim/vimrc
+
+
+
+"下面是编译配置，F5编译
+syntax on  
+set cindent  
+set nu  
+set tabstop=4  
+set shiftwidth=4  
+set background=dark  
+  
+map <C-A> ggVG"+y  
+map <F5> :call Run()<CR>  
+func! Run()  
+    exec "w"  
+    exec "!g++ -Wall % -o %<"  
+    exec "!./%<"  
+endfunc  
+
+
+
+"括号自动匹配
+imap ( ()<ESC>i
+imap ) <c-r>=ClosePair(')')<CR>
+imap [ []<ESC>i
+imap ] <c-r>=ClosePair(']')<CR>
+imap { {}<ESC>i
+
+function! ClosePair(char)
+    if getline('.')[col('.')-1] == a:char
+        return "\<Right>"
+    else
+        return a:char
+    endif
+endfunction
